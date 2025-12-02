@@ -1,0 +1,26 @@
+{
+  "expo": {
+    "name": "DomesticCareServices",
+    "slug": "DomesticCareServices",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./src/assests/images/icon.jpeg",
+    "scheme": "dcsapp",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./src/assests/images/DCS-logo.png.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#F5F5DC"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.hannan.domesticcareservices"
+    },
+    "android": {
+      "package": "com.hannan.domesticcareservices"
+    },
+    "web": {
+      "favicon": "./src/assests/images/DCS-logo.png.png"
+    }
+  }
+}
