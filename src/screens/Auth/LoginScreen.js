@@ -1,43 +1,46 @@
 // src/screens/Auth/LoginScreen.js
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  Alert,
-  ScrollView,
-  Image,
-  StatusBar,
-  KeyboardAvoidingView,
-  Platform,
-} from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Input from '../../components/common/Input';
-import Button from '../../components/common/Button';
-import { authService } from '../../api/authService';
-import { COLORS } from '../../constants/colors';
+    Alert,
+    Image,
+    KeyboardAvoidingView,
+    Platform,
+    ScrollView,
+    StatusBar,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
+} from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { authService } from "../../api/authService";
+import Button from "../../components/common/Button";
+import Input from "../../components/common/Input";
+import { COLORS } from "../../constants/colors";
 
-const logo = require('../../../src/assests/images/DCS-logo.png.png');
+const logo = require("../../../src/assests/images/DCS-logo.png.png");
 
 const LoginScreen = ({ navigation }) => {
   const insets = useSafeAreaInsets();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
   const handleLogin = async () => {
     if (!email || !password) {
-      setError('Please fill in all fields.');
+      setError("Please fill in all fields.");
       return;
     }
     setIsLoading(true);
     setError(null);
-    const { user, error: loginError } = await authService.loginWithEmail(email, password);
+    const { error: loginError } = await authService.loginWithEmail(
+      email,
+      password,
+    );
     setIsLoading(false);
     if (loginError) {
-      Alert.alert('Login Failed', loginError);
+      Alert.alert("Login Failed", loginError);
       setError(loginError);
     }
   };
@@ -47,7 +50,12 @@ const LoginScreen = ({ navigation }) => {
       <StatusBar backgroundColor={COLORS.primary} barStyle="light-content" />
 
       {/* --- 1. Fixed Header Background (Behind) --- */}
-      <View style={[styles.headerBackground, { paddingTop: insets.top, height: 240 }]}>
+      <View
+        style={[
+          styles.headerBackground,
+          { paddingTop: insets.top, height: 240 },
+        ]}
+      >
         <View style={styles.headerContent}>
           <Text style={styles.headerTitle}>Welcome Back</Text>
           <Text style={styles.headerSubtitle}>Sign in to continue</Text>
@@ -55,27 +63,27 @@ const LoginScreen = ({ navigation }) => {
       </View>
 
       {/* --- 2. Scrollable Form (On Top) --- */}
-      <KeyboardAvoidingView 
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={{ flex: 1, zIndex: 10 }}
       >
-        <ScrollView 
+        <ScrollView
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
           {/* Logo Container (Overlapping) */}
           <View style={styles.logoContainer}>
-             <View style={styles.logoCircle}>
-               <Image source={logo} style={styles.logo} resizeMode="contain" />
-             </View>
+            <View style={styles.logoCircle}>
+              <Image source={logo} style={styles.logo} resizeMode="contain" />
+            </View>
           </View>
 
           {/* Form Card */}
           <View style={styles.card}>
-            <View style={{ marginTop: 40 }}> 
+            <View style={{ marginTop: 40 }}>
               {/* Spacer for Logo overlap */}
-              
+
               <Input
                 label="Email Address"
                 placeholder="name@example.com"
@@ -109,8 +117,8 @@ const LoginScreen = ({ navigation }) => {
 
           {/* Footer */}
           <View style={styles.footer}>
-            <Text style={styles.footerText}>Don't have an account? </Text>
-            <TouchableOpacity onPress={() => navigation.navigate('Register')}>
+            <Text style={styles.footerText}>Don&apos;t have an account? </Text>
+            <TouchableOpacity onPress={() => navigation.navigate("Register")}>
               <Text style={styles.footerLink}>Sign Up</Text>
             </TouchableOpacity>
           </View>
@@ -130,8 +138,8 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.primary, // Teal
     borderBottomLeftRadius: 30,
     borderBottomRightRadius: 30,
-    alignItems: 'center',
-    position: 'absolute',
+    alignItems: "center",
+    position: "absolute",
     top: 0,
     left: 0,
     right: 0,
@@ -139,17 +147,17 @@ const styles = StyleSheet.create({
   },
   headerContent: {
     marginTop: 40,
-    alignItems: 'center',
+    alignItems: "center",
   },
   headerTitle: {
     fontSize: 28,
-    fontWeight: 'bold',
-    color: '#FFF',
+    fontWeight: "bold",
+    color: "#FFF",
     marginBottom: 8,
   },
   headerSubtitle: {
     fontSize: 16,
-    color: 'rgba(255,255,255,0.8)',
+    color: "rgba(255,255,255,0.8)",
   },
   // --- Scroll & Layout ---
   scrollContent: {
@@ -159,19 +167,19 @@ const styles = StyleSheet.create({
   },
   // --- Logo ---
   logoContainer: {
-    alignItems: 'center',
+    alignItems: "center",
     marginBottom: -50, // Pulls the card underneath
     zIndex: 20, // Sit on top of card
     elevation: 10,
   },
   logoCircle: {
-    backgroundColor: '#FFF',
+    backgroundColor: "#FFF",
     width: 100,
     height: 100,
     borderRadius: 50,
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: '#000',
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
     shadowRadius: 5,
@@ -183,11 +191,11 @@ const styles = StyleSheet.create({
   },
   // --- Card ---
   card: {
-    backgroundColor: '#FFF',
+    backgroundColor: "#FFF",
     borderRadius: 20,
     paddingHorizontal: 20,
     paddingBottom: 30,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
     shadowRadius: 10,
@@ -196,12 +204,12 @@ const styles = StyleSheet.create({
   },
   errorText: {
     color: COLORS.danger,
-    textAlign: 'center',
+    textAlign: "center",
     marginTop: 10,
     marginBottom: 5,
   },
   forgotPassContainer: {
-    alignSelf: 'flex-end',
+    alignSelf: "flex-end",
     marginBottom: 20,
     marginTop: 5,
   },
@@ -214,8 +222,8 @@ const styles = StyleSheet.create({
   },
   // --- Footer ---
   footer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
+    flexDirection: "row",
+    justifyContent: "center",
     marginTop: 24,
   },
   footerText: {
@@ -224,7 +232,7 @@ const styles = StyleSheet.create({
   },
   footerLink: {
     color: COLORS.primary,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     fontSize: 15,
   },
 });

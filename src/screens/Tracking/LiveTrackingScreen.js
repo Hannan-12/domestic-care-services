@@ -1,19 +1,19 @@
 // src/screens/Tracking/LiveTrackingScreen.js
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useEffect, useState } from "react";
 import {
-  View,
-  Text,
-  StyleSheet,
-  SafeAreaView,
-  Alert,
-  ActivityIndicator,
-} from 'react-native';
+    ActivityIndicator,
+    Alert,
+    SafeAreaView,
+    StyleSheet,
+    Text,
+    View,
+} from "react-native";
 // import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps'; // Commented out for Expo Go compatibility
-import { bookingService } from '../../api/bookingService';
-import { useAuth } from '../../hooks/useAuth';
-import Card from '../../components/common/Card';
-import Button from '../../components/common/Button';
-import { COLORS } from '../../constants/colors';
+import { bookingService } from "../../api/bookingService";
+import Button from "../../components/common/Button";
+import Card from "../../components/common/Card";
+import { COLORS } from "../../constants/colors";
+import { useAuth } from "../../hooks/useAuth";
 // import { mapService } from '../../api/mapService'; // mapService is not provided, commenting out
 
 /**
@@ -52,9 +52,9 @@ const LiveTrackingScreen = ({ route }) => {
           //   });
           // }
         } else {
-          setError('Provider location is not available.');
+          setError("Provider location is not available.");
         }
-      }
+      },
     );
 
     // Stop listening when the screen is unmounted
@@ -83,20 +83,23 @@ const LiveTrackingScreen = ({ route }) => {
   const handleEmergencyAlert = () => {
     // This implements FR-12
     Alert.alert(
-      'Emergency Alert (SOS)',
-      'Are you sure you want to send an emergency alert?',
+      "Emergency Alert (SOS)",
+      "Are you sure you want to send an emergency alert?",
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: "Cancel", style: "cancel" },
         {
-          text: 'Send Alert',
+          text: "Send Alert",
           onPress: () => {
             // TODO: Add logic to send notification to emergency contacts
-            console.log('SOS Alert Triggered for booking:', bookingId);
-            Alert.alert('Alert Sent', 'Your emergency contacts have been notified.');
+            console.log("SOS Alert Triggered for booking:", bookingId);
+            Alert.alert(
+              "Alert Sent",
+              "Your emergency contacts have been notified.",
+            );
           },
-          style: 'destructive',
+          style: "destructive",
         },
-      ]
+      ],
     );
   };
 
@@ -113,15 +116,15 @@ const LiveTrackingScreen = ({ route }) => {
           longitudeDelta: 0.0421,
         }}
       > */}
-        {/* User's Location Marker */}
-        {/* <Marker
+      {/* User's Location Marker */}
+      {/* <Marker
           coordinate={userLocation}
           title="Your Location"
           pinColor={COLORS.primary}
         /> */}
 
-        {/* Provider's Location Marker */}
-        {/* {providerLocation && (
+      {/* Provider's Location Marker */}
+      {/* {providerLocation && (
           <Marker
             coordinate={providerLocation}
             title="Service Provider"
@@ -132,12 +135,16 @@ const LiveTrackingScreen = ({ route }) => {
 
       {/* Placeholder View since MapView is removed */}
       <View style={styles.mapPlaceholder}>
-        <Text style={styles.mapPlaceholderText}>Map functionality requires a development build.</Text>
+        <Text style={styles.mapPlaceholderText}>
+          Map functionality requires a development build.
+        </Text>
         {providerLocation && (
-          <Text>Provider Lat: {providerLocation.latitude}, Lng: {providerLocation.longitude}</Text>
+          <Text>
+            Provider Lat: {providerLocation.latitude}, Lng:{" "}
+            {providerLocation.longitude}
+          </Text>
         )}
       </View>
-
 
       <Card style={styles.detailsCard}>
         {eta && <Text style={styles.etaText}>Estimated Arrival: {eta}</Text>}
@@ -145,7 +152,9 @@ const LiveTrackingScreen = ({ route }) => {
         {!providerLocation && !error && (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="small" color={COLORS.primary} />
-            <Text style={styles.loadingText}>Waiting for provider's location...</Text>
+            <Text style={styles.loadingText}>
+              Waiting for provider&apos;s location...
+            </Text>
           </View>
         )}
 
@@ -166,27 +175,28 @@ const LiveTrackingScreen = ({ route }) => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: COLORS.background || '#F5F5DC',
+    backgroundColor: COLORS.background || "#F5F5DC",
   },
-  map: { // Keep style for potential uncommenting
+  map: {
+    // Keep style for potential uncommenting
     flex: 1,
   },
   // Added placeholder style
   mapPlaceholder: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     backgroundColor: COLORS.greyLight,
     padding: 20,
   },
   mapPlaceholderText: {
-    textAlign: 'center',
+    textAlign: "center",
     color: COLORS.greyDark,
     fontSize: 16,
     marginBottom: 10,
   },
   detailsCard: {
-    position: 'absolute',
+    position: "absolute",
     bottom: 20,
     left: 20,
     right: 20,
@@ -195,15 +205,15 @@ const styles = StyleSheet.create({
   },
   etaText: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: COLORS.darkText,
-    textAlign: 'center',
+    textAlign: "center",
     marginBottom: 16,
   },
   loadingContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     marginBottom: 16,
   },
   loadingText: {
@@ -214,7 +224,7 @@ const styles = StyleSheet.create({
   errorText: {
     fontSize: 16,
     color: COLORS.danger,
-    textAlign: 'center',
+    textAlign: "center",
     marginBottom: 16,
   },
   sosButton: {

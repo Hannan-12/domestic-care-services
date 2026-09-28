@@ -1,24 +1,23 @@
 // src/api/bookingService.js
+import { onValue, ref, set } from "firebase/database";
 import {
-  collection,
-  addDoc,
-  getDoc,
-  getDocs,
-  doc,
-  query,
-  where,
-  updateDoc,
-  Timestamp,
-  orderBy
-} from 'firebase/firestore';
-import { ref, onValue, set } from 'firebase/database';
-import { firestoreDB, realtimeDB } from './firebase';
-import { profileService } from './profileService';
+    Timestamp,
+    addDoc,
+    collection,
+    doc,
+    getDoc,
+    getDocs,
+    query,
+    updateDoc,
+    where,
+} from "firebase/firestore";
+import { firestoreDB, realtimeDB } from "./firebase";
+import { profileService } from "./profileService";
 
-const SERVICES_COLLECTION = 'Services';
-const BOOKINGS_COLLECTION = 'bookings';
-const REQUESTS_COLLECTION = 'serviceRequests';
-const PROVIDER_LOCATIONS_REF = 'providerLocations';
+const SERVICES_COLLECTION = "Services";
+const BOOKINGS_COLLECTION = "bookings";
+const REQUESTS_COLLECTION = "serviceRequests";
+const PROVIDER_LOCATIONS_REF = "providerLocations";
 
 // --- Sanitize Data ---
 const sanitizeData = (data) => {
@@ -33,13 +32,15 @@ const sanitizeData = (data) => {
 
 // --- Convert Dates ---
 const convertDates = (data) => {
-    const newData = { ...data };
-    ['scheduleTime', 'startTime', 'endTime', 'createdAt'].forEach(field => {
-        if (newData[field]) {
-            newData[field] = newData[field]?.toDate ? newData[field].toDate() : new Date(newData[field]);
-        }
-    });
-    return newData;
+  const newData = { ...data };
+  ["scheduleTime", "startTime", "endTime", "createdAt"].forEach((field) => {
+    if (newData[field]) {
+      newData[field] = newData[field]?.toDate
+        ? newData[field].toDate()
+        : new Date(newData[field]);
+    }
+  });
+  return newData;
 };
 
 // --- EXISTING BOOKING FUNCTIONS ---
@@ -51,7 +52,7 @@ const getServiceDetails = async (serviceId) => {
     if (docSnap.exists()) {
       return { service: { id: docSnap.id, ...docSnap.data() }, error: null };
     } else {
-      return { service: null, error: 'No such service!' };
+      return { service: null, error: "No such service!" };
     }
   } catch (error) {
     return { service: null, error: error.message };
@@ -75,25 +76,33 @@ const getAvailableServices = async () => {
 const getProvidersForService = async (serviceId) => {
   try {
     const providersQuery = query(
-      collection(firestoreDB, 'users'),
-      where('role', '==', 'provider'),
-      where('skills', 'array-contains', serviceId)
+      collection(firestoreDB, "users"),
+      where("role", "==", "provider"),
+      where("skills", "array-contains", serviceId),
     );
     const querySnapshot = await getDocs(providersQuery);
-    const providersData = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-    
+    const providersData = querySnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+
     const providersWithRating = await Promise.all(
       providersData.map(async (provider) => {
-        const { reviews } = await profileService.getProviderReviews(provider.id);
+        const { reviews } = await profileService.getProviderReviews(
+          provider.id,
+        );
         let averageRating = 0;
-        let ratingText = 'New';
+        let ratingText = "New";
         if (reviews && reviews.length > 0) {
-          const total = reviews.reduce((acc, curr) => acc + (curr.rating || 0), 0);
+          const total = reviews.reduce(
+            (acc, curr) => acc + (curr.rating || 0),
+            0,
+          );
           averageRating = total / reviews.length;
           ratingText = `${averageRating.toFixed(1)} (${reviews.length})`;
         }
         return { ...provider, averageRating, ratingText };
-      })
+      }),
     );
     return { providers: providersWithRating, error: null };
   } catch (error) {
@@ -109,8 +118,11 @@ const createBooking = async (bookingData) => {
       scheduleTime: Timestamp.fromDate(new Date(cleanData.scheduleTime)),
       createdAt: Timestamp.fromDate(new Date()),
     };
-    
-    const docRef = await addDoc(collection(firestoreDB, BOOKINGS_COLLECTION), dataToSave);
+
+    const docRef = await addDoc(
+      collection(firestoreDB, BOOKINGS_COLLECTION),
+      dataToSave,
+    );
     return { bookingId: docRef.id, error: null };
   } catch (error) {
     return { bookingId: null, error: error.message };
@@ -121,14 +133,14 @@ const getUserBookings = async (userId) => {
   try {
     const bookingsQuery = query(
       collection(firestoreDB, BOOKINGS_COLLECTION),
-      where('userId', '==', userId)
+      where("userId", "==", userId),
     );
     const querySnapshot = await getDocs(bookingsQuery);
-    const bookings = querySnapshot.docs.map(doc => {
-        return {
-            id: doc.id, 
-            ...convertDates(doc.data()) 
-        };
+    const bookings = querySnapshot.docs.map((doc) => {
+      return {
+        id: doc.id,
+        ...convertDates(doc.data()),
+      };
     });
     return { bookings, error: null };
   } catch (error) {
@@ -137,20 +149,28 @@ const getUserBookings = async (userId) => {
 };
 
 const getProviderBookings = async (providerId) => {
-   try {
-    const q = query(collection(firestoreDB, BOOKINGS_COLLECTION), where('providerId', '==', providerId));
+  try {
+    const q = query(
+      collection(firestoreDB, BOOKINGS_COLLECTION),
+      where("providerId", "==", providerId),
+    );
     const snap = await getDocs(q);
-    const bookings = snap.docs.map(doc => {
-         return { id: doc.id, ...convertDates(doc.data()) };
+    const bookings = snap.docs.map((doc) => {
+      return { id: doc.id, ...convertDates(doc.data()) };
     });
     return { bookings, error: null };
-   } catch(e) { return { bookings: [], error: e.message }; }
+  } catch (e) {
+    return { bookings: [], error: e.message };
+  }
 };
 
 const listenToProviderLocation = (providerId, callback) => {
-  const providerLocationRef = ref(realtimeDB, `${PROVIDER_LOCATIONS_REF}/${providerId}`);
+  const providerLocationRef = ref(
+    realtimeDB,
+    `${PROVIDER_LOCATIONS_REF}/${providerId}`,
+  );
   return onValue(providerLocationRef, (snapshot) => {
-      callback(snapshot.exists() ? snapshot.val() : null);
+    callback(snapshot.exists() ? snapshot.val() : null);
   });
 };
 
@@ -159,135 +179,160 @@ const updateProviderLocation = async (providerId, location) => {
     const locRef = ref(realtimeDB, `${PROVIDER_LOCATIONS_REF}/${providerId}`);
     await set(locRef, { ...location, lastUpdated: new Date().toISOString() });
     return { success: true };
-  } catch (e) { return { success: false, error: e.message }; }
+  } catch (e) {
+    return { success: false, error: e.message };
+  }
 };
 
 const updateBookingStatus = async (bookingId, status) => {
-    try {
-        await updateDoc(doc(firestoreDB, BOOKINGS_COLLECTION, bookingId), { status });
-        return { success: true };
-    } catch(e) { return { success: false, error: e.message }; }
+  try {
+    await updateDoc(doc(firestoreDB, BOOKINGS_COLLECTION, bookingId), {
+      status,
+    });
+    return { success: true };
+  } catch (e) {
+    return { success: false, error: e.message };
+  }
 };
 
 // --- NEW FUNCTION: Skip Rating ---
 const skipRating = async (bookingId) => {
-    try {
-        const bookingRef = doc(firestoreDB, BOOKINGS_COLLECTION, bookingId);
-        await updateDoc(bookingRef, {
-            ratingSkipped: true
-        });
-        return { success: true };
-    } catch (error) {
-        return { success: false, error: error.message };
-    }
+  try {
+    const bookingRef = doc(firestoreDB, BOOKINGS_COLLECTION, bookingId);
+    await updateDoc(bookingRef, {
+      ratingSkipped: true,
+    });
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
 };
 
 // --- REQUESTS FUNCTIONS ---
 
 const createServiceRequest = async (requestData) => {
-    try {
-        const cleanData = sanitizeData(requestData);
-        const data = {
-            ...cleanData,
-            startTime: Timestamp.fromDate(new Date(cleanData.startTime)),
-            endTime: Timestamp.fromDate(new Date(cleanData.endTime)),
-            createdAt: Timestamp.fromDate(new Date())
-        };
-        const docRef = await addDoc(collection(firestoreDB, REQUESTS_COLLECTION), data);
-        return { success: true, id: docRef.id };
-    } catch (error) {
-        return { success: false, error: error.message };
-    }
+  try {
+    const cleanData = sanitizeData(requestData);
+    const data = {
+      ...cleanData,
+      startTime: Timestamp.fromDate(new Date(cleanData.startTime)),
+      endTime: Timestamp.fromDate(new Date(cleanData.endTime)),
+      createdAt: Timestamp.fromDate(new Date()),
+    };
+    const docRef = await addDoc(
+      collection(firestoreDB, REQUESTS_COLLECTION),
+      data,
+    );
+    return { success: true, id: docRef.id };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
 };
 
 const getOpenRequests = async () => {
-    try {
-        const q = query(
-            collection(firestoreDB, REQUESTS_COLLECTION),
-            where('status', '==', 'open')
-        );
-        const snapshot = await getDocs(q);
-        const requests = snapshot.docs.map(d => {
-            return { id: d.id, ...convertDates(d.data()) };
-        });
-        return { requests, error: null };
-    } catch (error) {
-        console.error("Error fetching open requests:", error);
-        return { requests: [], error: error.message };
-    }
+  try {
+    const q = query(
+      collection(firestoreDB, REQUESTS_COLLECTION),
+      where("status", "==", "open"),
+    );
+    const snapshot = await getDocs(q);
+    const requests = snapshot.docs.map((d) => {
+      return { id: d.id, ...convertDates(d.data()) };
+    });
+    return { requests, error: null };
+  } catch (error) {
+    console.error("Error fetching open requests:", error);
+    return { requests: [], error: error.message };
+  }
 };
 
 const getClientRequests = async (clientId) => {
-    try {
-        const q = query(
-            collection(firestoreDB, REQUESTS_COLLECTION),
-            where('clientId', '==', clientId)
-        );
-        const snapshot = await getDocs(q);
-        const requests = snapshot.docs
-            .map(d => ({ id: d.id, ...convertDates(d.data()) }))
-            .filter(req => req.status === 'open'); 
-        return { requests, error: null };
-    } catch(e) { return { requests: [], error: e.message }; }
+  try {
+    const q = query(
+      collection(firestoreDB, REQUESTS_COLLECTION),
+      where("clientId", "==", clientId),
+    );
+    const snapshot = await getDocs(q);
+    const requests = snapshot.docs
+      .map((d) => ({ id: d.id, ...convertDates(d.data()) }))
+      .filter((req) => req.status === "open");
+    return { requests, error: null };
+  } catch (e) {
+    return { requests: [], error: e.message };
+  }
 };
 
 const placeBid = async (requestId, providerData, amount, comment) => {
-    try {
-        const requestRef = doc(firestoreDB, REQUESTS_COLLECTION, requestId);
-        const requestSnap = await getDoc(requestRef);
-        let currentBids = requestSnap.data().bids || [];
-        
-        currentBids = currentBids.filter(bid => bid.providerId !== providerData.uid);
-        
-        const newBid = {
-            providerId: providerData.uid,
-            providerName: providerData.name,
-            providerAvatar: providerData.avatarUrl || null,
-            offerAmount: amount,
-            comment: comment,
-            createdAt: new Date().toISOString()
-        };
-        
-        await updateDoc(requestRef, {
-            bids: [...currentBids, sanitizeData(newBid)]
-        });
-        return { success: true };
-    } catch(e) { return { success: false, error: e.message }; }
+  try {
+    const requestRef = doc(firestoreDB, REQUESTS_COLLECTION, requestId);
+    const requestSnap = await getDoc(requestRef);
+    let currentBids = requestSnap.data().bids || [];
+
+    currentBids = currentBids.filter(
+      (bid) => bid.providerId !== providerData.uid,
+    );
+
+    const newBid = {
+      providerId: providerData.uid,
+      providerName: providerData.name,
+      providerAvatar: providerData.avatarUrl || null,
+      offerAmount: amount,
+      comment: comment,
+      createdAt: new Date().toISOString(),
+    };
+
+    await updateDoc(requestRef, {
+      bids: [...currentBids, sanitizeData(newBid)],
+    });
+    return { success: true };
+  } catch (e) {
+    return { success: false, error: e.message };
+  }
 };
 
 const acceptBid = async (request, bid) => {
-    try {
-        const bookingData = {
-            userId: request.clientId,
-            providerId: bid.providerId,
-            serviceId: request.serviceId,
-            serviceName: request.serviceName,
-            scheduleTime: request.startTime, 
-            status: 'confirmed',
-            totalPrice: bid.offerAmount,
-            address: request.address,
-            providerName: bid.providerName
-        };
-        
-        const { bookingId, error } = await createBooking(bookingData);
-        if(error) throw new Error(error);
+  try {
+    const bookingData = {
+      requestId: request.id,
+      userId: request.clientId,
+      providerId: bid.providerId,
+      serviceId: request.serviceId,
+      serviceName: request.serviceName,
+      scheduleTime: request.startTime,
+      status: "confirmed",
+      totalPrice: bid.offerAmount,
+      address: request.address,
+      providerName: bid.providerName,
+    };
 
-        const requestRef = doc(firestoreDB, REQUESTS_COLLECTION, request.id);
-        await updateDoc(requestRef, { status: 'booked', bookedBy: bid.providerId });
+    const { error } = await createBooking(bookingData);
+    if (error) throw new Error(error);
 
-        return { success: true };
-    } catch(e) { return { success: false, error: e.message }; }
+    const requestRef = doc(firestoreDB, REQUESTS_COLLECTION, request.id);
+    await updateDoc(requestRef, { status: "booked", bookedBy: bid.providerId });
+
+    return { success: true };
+  } catch (e) {
+    return { success: false, error: e.message };
+  }
 };
 
 const sendMessage = async (requestId, messageData) => {
-    try {
-        const msgsRef = collection(firestoreDB, REQUESTS_COLLECTION, requestId, 'messages');
-        await addDoc(msgsRef, {
-            ...messageData,
-            createdAt: Timestamp.fromDate(new Date())
-        });
-        return { success: true };
-    } catch(e) { return { success: false, error: e.message }; }
+  try {
+    const msgsRef = collection(
+      firestoreDB,
+      REQUESTS_COLLECTION,
+      requestId,
+      "messages",
+    );
+    await addDoc(msgsRef, {
+      ...messageData,
+      createdAt: Timestamp.fromDate(new Date()),
+    });
+    return { success: true };
+  } catch (e) {
+    return { success: false, error: e.message };
+  }
 };
 
 export const bookingService = {
@@ -306,5 +351,5 @@ export const bookingService = {
   placeBid,
   acceptBid,
   sendMessage,
-  skipRating // <-- Added here
+  skipRating, // <-- Added here
 };

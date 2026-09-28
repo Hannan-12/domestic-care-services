@@ -1,23 +1,39 @@
 // src/screens/Provider/ProviderDashboardScreen.js
-import React, { useState, useEffect } from 'react';
+import { Ionicons } from "@expo/vector-icons";
+import { useIsFocused } from "@react-navigation/native";
+import { useCallback, useEffect, useState } from "react";
 import {
-  View, Text, StyleSheet, FlatList, ActivityIndicator, Alert, StatusBar, TouchableOpacity
-} from 'react-native';
-import { bookingService } from '../../api/bookingService';
-import { useAuth } from '../../hooks/useAuth';
-import { COLORS } from '../../constants/colors';
-import { Ionicons } from '@expo/vector-icons';
-import { useIsFocused } from '@react-navigation/native';
+    ActivityIndicator,
+    Alert,
+    FlatList,
+    StatusBar,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
+} from "react-native";
+import { bookingService } from "../../api/bookingService";
+import { COLORS } from "../../constants/colors";
+import { useAuth } from "../../hooks/useAuth";
 
 // --- Badge Component ---
 const StatusBadge = ({ status }) => {
-  let bg = '#E0F7FA', text = '#006064';
-  if (status === 'completed') { bg = '#E8F5E9'; text = '#2E7D32'; }
-  if (status === 'confirmed') { bg = '#FFF3E0'; text = '#E65100'; }
-  
+  let bg = "#E0F7FA",
+    text = "#006064";
+  if (status === "completed") {
+    bg = "#E8F5E9";
+    text = "#2E7D32";
+  }
+  if (status === "confirmed") {
+    bg = "#FFF3E0";
+    text = "#E65100";
+  }
+
   return (
     <View style={[styles.badge, { backgroundColor: bg }]}>
-      <Text style={[styles.badgeText, { color: text }]}>{status.toUpperCase()}</Text>
+      <Text style={[styles.badgeText, { color: text }]}>
+        {status.toUpperCase()}
+      </Text>
     </View>
   );
 };
@@ -28,39 +44,65 @@ const ProviderDashboardScreen = ({ navigation }) => {
   const [bookings, setBookings] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  const fetchProviderBookings = useCallback(async () => {
+    if (!user) return;
+    setIsLoading(true);
+    const { bookings, error } = await bookingService.getProviderBookings(
+      user.uid,
+    );
+    if (!error) setBookings(bookings);
+    setIsLoading(false);
+  }, [user]);
+
+  useEffect(() => {
+    if (
+      user &&
+      isFocused &&
+      profile?.role === "provider" &&
+      profile?.verificationStatus === "approved"
+    ) {
+      fetchProviderBookings();
+    }
+  }, [
+    fetchProviderBookings,
+    isFocused,
+    profile?.role,
+    profile?.verificationStatus,
+    user,
+  ]);
+
   // --- Check Verification ---
-  if (profile?.role === 'provider' && profile?.verificationStatus !== 'approved') {
+  if (
+    profile?.role === "provider" &&
+    profile?.verificationStatus !== "approved"
+  ) {
     return (
-       <View style={styles.centerContainer}>
-         <Ionicons name="lock-closed-outline" size={60} color={COLORS.grey} />
-         <Text style={styles.emptyText}>Account not verified.</Text>
-         <TouchableOpacity onPress={() => navigation.navigate('ProviderVerificationScreen')}>
-            <Text style={{color: COLORS.primary, fontWeight: 'bold', marginTop: 10}}>Go to Verification</Text>
-         </TouchableOpacity>
-       </View>
+      <View style={styles.centerContainer}>
+        <Ionicons name="lock-closed-outline" size={60} color={COLORS.grey} />
+        <Text style={styles.emptyText}>Account not verified.</Text>
+        <TouchableOpacity
+          onPress={() => navigation.navigate("ProviderVerificationScreen")}
+        >
+          <Text
+            style={{ color: COLORS.primary, fontWeight: "bold", marginTop: 10 }}
+          >
+            Go to Verification
+          </Text>
+        </TouchableOpacity>
+      </View>
     );
   }
 
-  useEffect(() => {
-    if (user && isFocused) {
-      fetchProviderBookings();
-    }
-  }, [user, isFocused]);
-
-  const fetchProviderBookings = async () => {
-    setIsLoading(true);
-    const { bookings, error } = await bookingService.getProviderBookings(user.uid);
-    if (!error) setBookings(bookings);
-    setIsLoading(false);
-  };
-
   const handleCompleteBooking = (bookingId) => {
-    Alert.alert('Complete Job', 'Are you sure you have finished this job?', [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Yes, Complete', onPress: async () => {
-            await bookingService.updateBookingStatus(bookingId, 'completed');
-            fetchProviderBookings();
-        }}
+    Alert.alert("Complete Job", "Are you sure you have finished this job?", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Yes, Complete",
+        onPress: async () => {
+          await bookingService.updateBookingStatus(bookingId, "completed");
+          fetchProviderBookings();
+        },
+      },
     ]);
   };
 
@@ -69,8 +111,10 @@ const ProviderDashboardScreen = ({ navigation }) => {
     <View style={styles.card}>
       <View style={styles.cardHeader}>
         <View>
-            <Text style={styles.cardTitle}>{item.serviceName}</Text>
-            <Text style={styles.clientText}>Client: {item.clientName || 'Client'}</Text>
+          <Text style={styles.cardTitle}>{item.serviceName}</Text>
+          <Text style={styles.clientText}>
+            Client: {item.clientName || "Client"}
+          </Text>
         </View>
         <StatusBadge status={item.status} />
       </View>
@@ -78,38 +122,51 @@ const ProviderDashboardScreen = ({ navigation }) => {
       <View style={styles.divider} />
 
       <View style={styles.infoRow}>
-         <Ionicons name="calendar-outline" size={16} color={COLORS.greyDark} />
-         <Text style={styles.infoText}>
-            {item.scheduleTime ? new Date(item.scheduleTime).toLocaleString() : 'N/A'}
-         </Text>
+        <Ionicons name="calendar-outline" size={16} color={COLORS.greyDark} />
+        <Text style={styles.infoText}>
+          {item.scheduleTime
+            ? new Date(item.scheduleTime).toLocaleString()
+            : "N/A"}
+        </Text>
       </View>
       <View style={styles.infoRow}>
-         <Ionicons name="wallet-outline" size={16} color={COLORS.greyDark} />
-         <Text style={styles.infoText}>Earnings: {item.totalPrice} Rs</Text>
+        <Ionicons name="wallet-outline" size={16} color={COLORS.greyDark} />
+        <Text style={styles.infoText}>Earnings: {item.totalPrice} Rs</Text>
       </View>
 
       {/* --- Action Buttons --- */}
       <View style={styles.actionRow}>
-          {item.status === 'confirmed' && (
-              <TouchableOpacity 
-                style={styles.completeBtn} 
-                onPress={() => handleCompleteBooking(item.id)}
-              >
-                <Ionicons name="checkmark-done-circle" size={20} color="#FFF" style={{marginRight: 6}} />
-                <Text style={styles.btnText}>Mark Completed</Text>
-              </TouchableOpacity>
-          )}
-          
-          <TouchableOpacity 
-            style={styles.chatBtn}
-            onPress={() => navigation.navigate('ChatScreen', { 
-                requestId: item.id, 
-                chatTitle: item.clientName || 'Client',
-                providerId: user.uid 
-            })}
+        {item.status === "confirmed" && (
+          <TouchableOpacity
+            style={styles.completeBtn}
+            onPress={() => handleCompleteBooking(item.id)}
           >
-             <Ionicons name="chatbubble-ellipses-outline" size={20} color={COLORS.primary} />
+            <Ionicons
+              name="checkmark-done-circle"
+              size={20}
+              color="#FFF"
+              style={{ marginRight: 6 }}
+            />
+            <Text style={styles.btnText}>Mark Completed</Text>
           </TouchableOpacity>
+        )}
+
+        <TouchableOpacity
+          style={styles.chatBtn}
+          onPress={() =>
+            navigation.navigate("ChatScreen", {
+              requestId: item.requestId || item.id,
+              chatTitle: item.clientName || "Client",
+              providerId: user.uid,
+            })
+          }
+        >
+          <Ionicons
+            name="chatbubble-ellipses-outline"
+            size={20}
+            color={COLORS.primary}
+          />
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -117,7 +174,7 @@ const ProviderDashboardScreen = ({ navigation }) => {
   return (
     <View style={styles.container}>
       <StatusBar backgroundColor={COLORS.primary} barStyle="light-content" />
-      
+
       {/* --- Header --- */}
       <View style={styles.headerBackground}>
         <Text style={styles.headerTitle}>My Assignments</Text>
@@ -125,40 +182,48 @@ const ProviderDashboardScreen = ({ navigation }) => {
 
       {/* --- Stats Banner --- */}
       <View style={styles.statsContainer}>
-         <View style={styles.statItem}>
-            <Text style={styles.statNumber}>{bookings.filter(b => b.status === 'confirmed').length}</Text>
-            <Text style={styles.statLabel}>Active</Text>
-         </View>
-         <View style={styles.verticalDivider} />
-         <View style={styles.statItem}>
-            <Text style={styles.statNumber}>{bookings.filter(b => b.status === 'completed').length}</Text>
-            <Text style={styles.statLabel}>Completed</Text>
-         </View>
-         <View style={styles.verticalDivider} />
-         <View style={styles.statItem}>
-            <Text style={styles.statNumber}>{bookings.length}</Text>
-            <Text style={styles.statLabel}>Total</Text>
-         </View>
+        <View style={styles.statItem}>
+          <Text style={styles.statNumber}>
+            {bookings.filter((b) => b.status === "confirmed").length}
+          </Text>
+          <Text style={styles.statLabel}>Active</Text>
+        </View>
+        <View style={styles.verticalDivider} />
+        <View style={styles.statItem}>
+          <Text style={styles.statNumber}>
+            {bookings.filter((b) => b.status === "completed").length}
+          </Text>
+          <Text style={styles.statLabel}>Completed</Text>
+        </View>
+        <View style={styles.verticalDivider} />
+        <View style={styles.statItem}>
+          <Text style={styles.statNumber}>{bookings.length}</Text>
+          <Text style={styles.statLabel}>Total</Text>
+        </View>
       </View>
 
       {isLoading ? (
-          <View style={styles.centerContainer}>
-             <ActivityIndicator size="large" color={COLORS.primary} />
-          </View>
+        <View style={styles.centerContainer}>
+          <ActivityIndicator size="large" color={COLORS.primary} />
+        </View>
       ) : (
-          <FlatList
-            data={bookings}
-            keyExtractor={(item) => item.id}
-            renderItem={renderBookingCard}
-            contentContainerStyle={styles.listContent}
-            showsVerticalScrollIndicator={false}
-            ListEmptyComponent={
-                <View style={styles.centerContainer}>
-                    <Ionicons name="folder-open-outline" size={60} color={COLORS.grey} />
-                    <Text style={styles.emptyText}>No assigned jobs yet.</Text>
-                </View>
-            }
-          />
+        <FlatList
+          data={bookings}
+          keyExtractor={(item) => item.id}
+          renderItem={renderBookingCard}
+          contentContainerStyle={styles.listContent}
+          showsVerticalScrollIndicator={false}
+          ListEmptyComponent={
+            <View style={styles.centerContainer}>
+              <Ionicons
+                name="folder-open-outline"
+                size={60}
+                color={COLORS.grey}
+              />
+              <Text style={styles.emptyText}>No assigned jobs yet.</Text>
+            </View>
+          }
+        />
       )}
     </View>
   );
@@ -166,23 +231,23 @@ const ProviderDashboardScreen = ({ navigation }) => {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.background },
-  centerContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  
+  centerContainer: { flex: 1, justifyContent: "center", alignItems: "center" },
+
   // --- Header ---
   headerBackground: {
     backgroundColor: COLORS.primary,
     paddingTop: 60,
     paddingBottom: 50,
-    alignItems: 'center',
+    alignItems: "center",
     borderBottomLeftRadius: 30,
     borderBottomRightRadius: 30,
   },
-  headerTitle: { fontSize: 22, fontWeight: 'bold', color: '#FFF' },
+  headerTitle: { fontSize: 22, fontWeight: "bold", color: "#FFF" },
 
   // --- Stats ---
   statsContainer: {
-    flexDirection: 'row',
-    backgroundColor: '#FFF',
+    flexDirection: "row",
+    backgroundColor: "#FFF",
     marginHorizontal: 20,
     marginTop: -30,
     borderRadius: 16,
@@ -194,15 +259,15 @@ const styles = StyleSheet.create({
     elevation: 4,
     marginBottom: 10,
   },
-  statItem: { flex: 1, alignItems: 'center' },
-  statNumber: { fontSize: 18, fontWeight: 'bold', color: COLORS.darkText },
+  statItem: { flex: 1, alignItems: "center" },
+  statNumber: { fontSize: 18, fontWeight: "bold", color: COLORS.darkText },
   statLabel: { fontSize: 12, color: COLORS.greyDark },
-  verticalDivider: { width: 1, backgroundColor: '#EEE' },
+  verticalDivider: { width: 1, backgroundColor: "#EEE" },
 
   // --- List & Card ---
   listContent: { padding: 20 },
   card: {
-    backgroundColor: '#FFF',
+    backgroundColor: "#FFF",
     borderRadius: 16,
     padding: 16,
     marginBottom: 16,
@@ -212,38 +277,42 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 3,
     borderWidth: 1,
-    borderColor: 'rgba(0,0,0,0.02)',
+    borderColor: "rgba(0,0,0,0.02)",
   },
-  cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
-  cardTitle: { fontSize: 18, fontWeight: 'bold', color: COLORS.darkText },
+  cardHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+  },
+  cardTitle: { fontSize: 18, fontWeight: "bold", color: COLORS.darkText },
   clientText: { fontSize: 13, color: COLORS.greyDark, marginTop: 2 },
-  
+
   badge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12 },
-  badgeText: { fontSize: 10, fontWeight: 'bold' },
+  badgeText: { fontSize: 10, fontWeight: "bold" },
 
-  divider: { height: 1, backgroundColor: '#F0F0F0', marginVertical: 12 },
+  divider: { height: 1, backgroundColor: "#F0F0F0", marginVertical: 12 },
 
-  infoRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 6 },
+  infoRow: { flexDirection: "row", alignItems: "center", marginBottom: 6 },
   infoText: { marginLeft: 8, fontSize: 14, color: COLORS.greyDark },
 
   // --- Actions ---
-  actionRow: { flexDirection: 'row', marginTop: 12, gap: 10 },
+  actionRow: { flexDirection: "row", marginTop: 12, gap: 10 },
   completeBtn: {
     flex: 1,
     backgroundColor: COLORS.success,
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
     paddingVertical: 10,
     borderRadius: 25,
   },
-  btnText: { color: '#FFF', fontWeight: 'bold', fontSize: 14 },
+  btnText: { color: "#FFF", fontWeight: "bold", fontSize: 14 },
   chatBtn: {
-    backgroundColor: '#F0F0F0',
+    backgroundColor: "#F0F0F0",
     padding: 10,
     borderRadius: 25,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   emptyText: { color: COLORS.greyDark, marginTop: 10, fontSize: 16 },
 });

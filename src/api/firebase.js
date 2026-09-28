@@ -1,31 +1,43 @@
-import { initializeApp, getApps, getApp } from 'firebase/app';
+import ReactNativeAsyncStorage from "@react-native-async-storage/async-storage";
+import { getApp, getApps, initializeApp } from "firebase/app";
 import {
-  initializeAuth,
-  getReactNativePersistence,
-} from 'firebase/auth';
-import ReactNativeAsyncStorage from '@react-native-async-storage/async-storage';
-import { getFirestore } from 'firebase/firestore';
-import { getStorage } from 'firebase/storage';
-import { getDatabase } from 'firebase/database';
+    getAuth,
+    getReactNativePersistence,
+    initializeAuth,
+} from "firebase/auth";
+import { getDatabase } from "firebase/database";
+import { getFirestore } from "firebase/firestore";
+import { getStorage } from "firebase/storage";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyAKUZ00n5cjJm0jiSbWADkwTOScs3OfsfU",
-  authDomain: "domesticcareservicesapp.firebaseapp.com",
-  projectId: "domesticcareservicesapp",
-  storageBucket: "domesticcareservicesapp.appspot.com",
-  messagingSenderId: "951162536195",
-  appId: "1:951162536195:android:f480aa66bdd6791e69e936",
-  measurementId: "G-XXXXXXXXXX"
+  apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.EXPO_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.EXPO_PUBLIC_FIREBASE_APP_ID,
+  databaseURL: process.env.EXPO_PUBLIC_FIREBASE_DATABASE_URL,
 };
 
-const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
-const auth = initializeAuth(app, {
-  persistence: getReactNativePersistence(ReactNativeAsyncStorage),
-});
+if (Object.values(firebaseConfig).some((value) => !value)) {
+  throw new Error(
+    "Set the required EXPO_PUBLIC_FIREBASE_* values. See .env.example.",
+  );
+}
 
+const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
+let auth;
+try {
+  auth = initializeAuth(app, {
+    persistence: getReactNativePersistence(ReactNativeAsyncStorage),
+  });
+} catch (error) {
+  if (error.code !== "auth/already-initialized") throw error;
+  auth = getAuth(app);
+}
 
 const firestoreDB = getFirestore(app);
 const realtimeDB = getDatabase(app);
 const storage = getStorage(app);
 
-export { auth, firestoreDB, realtimeDB, storage, app };
+export { app, auth, firestoreDB, realtimeDB, storage };

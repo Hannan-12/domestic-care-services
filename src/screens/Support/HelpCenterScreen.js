@@ -1,23 +1,23 @@
 // src/screens/Support/HelpCenterScreen.js
-import React from 'react';
+import { Ionicons } from "@expo/vector-icons";
+import React from "react";
 import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  StatusBar,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { COLORS } from '../../constants/colors';
-import { Ionicons } from '@expo/vector-icons';
+    ScrollView,
+    StatusBar,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { COLORS } from "../../constants/colors";
 
 /**
  * A modern, individual card for support options.
  */
 const SupportOption = ({ icon, title, subtitle, onPress }) => (
-  <TouchableOpacity 
-    style={styles.optionCard} 
+  <TouchableOpacity
+    style={styles.optionCard}
     onPress={onPress}
     activeOpacity={0.8}
   >
@@ -38,22 +38,33 @@ const HelpCenterScreen = ({ navigation }) => {
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar backgroundColor={COLORS.primary} barStyle="light-content" />
-      
+
       {/* --- Modern Header --- */}
       <View style={styles.headerContainer}>
         <Text style={styles.headerTitle}>Help Center</Text>
-        <Text style={styles.headerSubtitle}>We're here to assist you anytime.</Text>
+        <Text style={styles.headerSubtitle}>
+          We&apos;re here to assist you anytime.
+        </Text>
       </View>
 
-      <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
-        
+      <ScrollView
+        contentContainerStyle={styles.container}
+        showsVerticalScrollIndicator={false}
+      >
         {/* --- Hero Banner (Mustard) --- */}
         <View style={styles.heroBanner}>
           <View style={styles.heroContent}>
             <Text style={styles.heroTitle}>Need quick help?</Text>
-            <Text style={styles.heroText}>Our support team is available 24/7 to solve your issues.</Text>
+            <Text style={styles.heroText}>
+              Our support team is available 24/7 to solve your issues.
+            </Text>
           </View>
-          <Ionicons name="headset" size={50} color={COLORS.primary} style={{ opacity: 0.8 }} />
+          <Ionicons
+            name="headset"
+            size={50}
+            color={COLORS.primary}
+            style={{ opacity: 0.8 }}
+          />
         </View>
 
         <Text style={styles.sectionLabel}>Select an option</Text>
@@ -63,7 +74,7 @@ const HelpCenterScreen = ({ navigation }) => {
           icon="book-outline"
           title="FAQs & Help Guides"
           subtitle="Find answers to common questions"
-          onPress={() => navigation.navigate('FaqsScreen')}
+          onPress={() => navigation.navigate("FaqsScreen")}
         />
 
         <SupportOption
@@ -97,7 +108,6 @@ const HelpCenterScreen = ({ navigation }) => {
         <View style={styles.footer}>
           <Text style={styles.footerText}>Domestic Care Services v1.0.0</Text>
         </View>
-
       </ScrollView>
     </SafeAreaView>
   );
@@ -125,15 +135,15 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 28,
-    fontWeight: 'bold',
-    color: '#FFF',
+    fontWeight: "bold",
+    color: "#FFF",
     marginBottom: 4,
   },
   headerSubtitle: {
     fontSize: 16,
-    color: 'rgba(255,255,255,0.85)',
+    color: "rgba(255,255,255,0.85)",
   },
-  
+
   // Scroll Content
   container: {
     paddingHorizontal: 20,
@@ -145,9 +155,9 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.secondary, // Mustard
     borderRadius: 20,
     padding: 20,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: 24,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
@@ -161,20 +171,20 @@ const styles = StyleSheet.create({
   },
   heroTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#000',
+    fontWeight: "bold",
+    color: "#000",
     marginBottom: 4,
   },
   heroText: {
     fontSize: 14,
-    color: '#333',
+    color: "#333",
     lineHeight: 20,
   },
 
   // Section Label
   sectionLabel: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: COLORS.darkText,
     marginBottom: 16,
     marginLeft: 4,
@@ -182,9 +192,9 @@ const styles = StyleSheet.create({
 
   // Option Card Styles
   optionCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FFF',
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FFF",
     padding: 16,
     borderRadius: 16,
     marginBottom: 12,
@@ -195,15 +205,15 @@ const styles = StyleSheet.create({
     shadowRadius: 10,
     elevation: 2,
     borderWidth: 1,
-    borderColor: 'rgba(0,0,0,0.02)',
+    borderColor: "rgba(0,0,0,0.02)",
   },
   iconCircle: {
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: COLORS.primaryLight || '#E0F2F1', // Light Teal background
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: COLORS.primaryLight || "#E0F2F1", // Light Teal background
+    justifyContent: "center",
+    alignItems: "center",
     marginRight: 16,
   },
   textContainer: {
@@ -211,7 +221,7 @@ const styles = StyleSheet.create({
   },
   optionTitle: {
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: COLORS.darkText,
     marginBottom: 2,
   },
@@ -226,7 +236,7 @@ const styles = StyleSheet.create({
   // Footer
   footer: {
     marginTop: 20,
-    alignItems: 'center',
+    alignItems: "center",
   },
   footerText: {
     color: COLORS.greyDark,

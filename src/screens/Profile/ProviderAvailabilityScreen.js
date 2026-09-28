@@ -1,18 +1,17 @@
 // src/screens/Profile/ProviderAvailabilityScreen.js
-import React, { useState, useCallback } from 'react';
+import React, { useCallback, useState } from "react";
 import {
-  View,
-  Text,
-  StyleSheet,
-  SafeAreaView,
-  ScrollView,
-  Alert,
-} from 'react-native';
-import { useAuth } from '../../hooks/useAuth';
-import { profileService } from '../../api/profileService';
-import AvailabilityCalendar from '../../components/profile/AvailabilityCalendar';
-import Button from '../../components/common/Button';
-import { COLORS } from '../../constants/colors';
+    Alert,
+    SafeAreaView,
+    ScrollView,
+    StyleSheet,
+    Text
+} from "react-native";
+import { profileService } from "../../api/profileService";
+import Button from "../../components/common/Button";
+import AvailabilityCalendar from "../../components/profile/AvailabilityCalendar";
+import { COLORS } from "../../constants/colors";
+import { useAuth } from "../../hooks/useAuth";
 
 /**
  * Screen for providers to manage their available days (FR-3)
@@ -23,7 +22,7 @@ const ProviderAvailabilityScreen = ({ navigation }) => {
 
   // Initialize markedDates from the user's profile, or with an empty object
   const [markedDates, setMarkedDates] = useState(
-    profile?.availability?.markedDates || {}
+    profile?.availability?.markedDates || {},
   );
 
   /**
@@ -46,12 +45,12 @@ const ProviderAvailabilityScreen = ({ navigation }) => {
       }
       setMarkedDates(newMarkedDates);
     },
-    [markedDates]
+    [markedDates],
   );
 
   const handleSaveChanges = async () => {
     if (!user) {
-      Alert.alert('Error', 'You are not logged in.');
+      Alert.alert("Error", "You are not logged in.");
       return;
     }
 
@@ -65,15 +64,15 @@ const ProviderAvailabilityScreen = ({ navigation }) => {
 
     const { success, error } = await profileService.updateProviderDetails(
       user.uid,
-      detailsToUpdate
+      detailsToUpdate,
     );
 
     setIsLoading(false);
 
     if (error) {
-      Alert.alert('Save Failed', error);
+      Alert.alert("Save Failed", error);
     } else {
-      Alert.alert('Success', 'Your availability has been updated.');
+      Alert.alert("Success", "Your availability has been updated.");
       navigation.goBack();
     }
   };
@@ -83,7 +82,7 @@ const ProviderAvailabilityScreen = ({ navigation }) => {
       <ScrollView contentContainerStyle={styles.container}>
         <Text style={styles.title}>Manage Availability</Text>
         <Text style={styles.subtitle}>
-          Tap a day to mark it as 'Available'. Tap again to remove it.
+          Tap a day to mark it as &apos;Available&apos;. Tap again to remove it.
         </Text>
 
         <AvailabilityCalendar
@@ -105,14 +104,14 @@ const ProviderAvailabilityScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: COLORS.background || '#F5F5DC',
+    backgroundColor: COLORS.background || "#F5F5DC",
   },
   container: {
     padding: 24,
   },
   title: {
     fontSize: 24,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: COLORS.darkText,
     marginBottom: 8,
   },
